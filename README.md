@@ -112,7 +112,7 @@ top5 = flow.map(int).next(Limiter(5)).collect()
 No more than 5 values will pass through this pipe.
 
 You can chain as many processors as you like. At least, until you are
-not out of memory. Or you PC.
+not out of memory. Or your PC.
 
 ### filter(filterFunction)
 
