@@ -10,12 +10,12 @@ There are implementations of same idea for other languages:
 
 ## What is Flow?
 
-Let's say we need simple app witch parses some strings from STDIN. If string is
-a valid integer number we'll save it into database. Also, we log invalid
+Let's say we need simple app witch parses some strings from STDIN. If string represents
+a valid integer number we'll parse it and save into database. Also, we log invalid
 strings. Pretty easy, right? But how much boilerplate code we have to write to
 make it happen? All that variables, if-statements, error handling. Brrr!
 
-Let's try to be not so ridgid and allow data gently flow through our
+Let's try not so ridgid approach and allow data gently flow through our
 application.
 
 ```python
@@ -53,10 +53,10 @@ flow.send(sys.stdin)
 print(integers)
 ```
 
-At first, we create and setup out brand-new Flow which will gladly accept
-strings as inputs.
+At first, we created our brand-new Flow. It will gladly accept
+strings.
 
-What do we do next? Let's give our strings a little cleaning
+What do we do next? Let's give our strings a little washing
 `map(lambda s: s.strip())` and let empty ones go where ever they want to
 `filter(lambda s: s != "")`.
 
@@ -76,9 +76,9 @@ We worked hard to get them! Well, not so hard, tbh. Because we used Flow.
 Anyway, let's `.collect()` them into comfortable `list` and save each one to The
 Safe Database along the way: `peep(lambda i: print(f"insert into table(n) values({i});"))`.
 
-Out Flow is ready to accept values. Let's `flow.send(sys.stdin)` some into it.
+Out Flow set up and ready to accept values. Let's `flow.send(sys.stdin)` some into it.
 
-We and our beloved `integers` lived happily ever after. The end.
+This is it. We and our beloved `integers` lived happily ever after. The end.
 
 ## What else can it do?
 
@@ -89,7 +89,7 @@ Actually, not much. But you can be very creative with it.
 This is the core of the Flow. The heart. The blood-fl... oh.
 
 It connects element of Flow to next one (pipe?) and tells how to process 
-passing value. If `processor` return `None` value will not go down the Flow 
+passing value. If `processor` returns `None` value will not go down the Flow 
 any further.
 
 For example, there is no `limit` method in Flow right now. It's easy to
@@ -107,44 +107,50 @@ class Limiter:
         self.counter += 1
         return v
 
-flow.next(Limiter(5))
+top5 = flow.map(int).next(Limiter(5)).collect()
 ```
-No more than 5 values will pass this pipe.
+No more than 5 values will pass through this pipe.
+
+You can chain as many processors as you like. At least, as you are
+not out of memory. Or you PC.
 
 ### filter(filterFunction)
 
-If filter-function returns `True` values passes. Trivial.
+If filter-function returns `True` value passes. Trivial.
 
 ### peep(observer)
 
-Allows to "see" each value passing through Flow.
+Allows to "see" each value passing through.
 
 ### collect() & collect_to(your_list)
 
-Collect all values reached this point. `collect_to` adds values to `list` passed.
-It's a final point of a pipe.
+Collect all values reached this point. `collect_to` adds values to the `list`
+passed. It's a final stop of a pipe.
 
 ### map(mapper)
 
-Do I need to explain this?
+Do I really need to explain this?
 
 ### segregate(classifier, class1, class2, ...)
 
-Splits source Flow into several. Than uses `classifier` to... ehm... classify
-value end sends to corresponding Flow.
+Splits source Flow into several by the number of classes given.
+Than uses `classifier` to... ehm... classify value and send to corresponding
+Flow.
 
 ### send(values)
 
 Sends a bunch of values into the Flow. You can send values one-by-one by
-calling the Flow itself. Ex., `flow("next_value")`.
+calling the Flow itself.
+
+Ex., `flow("next_value")`.
 
 ### join(flow1, flow2, ...)
 
-Joins flows into one Mega-Flow. Because, why not?
+Joins given flows into one Mega-Flow. Because, why not?
 
 ## Examples
 
-I'll use couple the of own functions in examples. There they are.
+I'll use couple of own functions in examples. There they are:
 
 ```python
 def is_integer(s: str) -> bool:
@@ -177,7 +183,7 @@ flow("3")
 # 3
 ```
 
-### 2. Filter, convert & collect values
+### 2. Filter, convert and collect values
 ```python
 flow = Flow()
 integers = flow.filter(is_integer).map(int).collect()
@@ -224,6 +230,11 @@ talls.peep(lambda v: print(v, 'is tall'))
 flow(1.75)
 flow(1.55)
 flow(1.85)
+
+# Output:
+# 1.75 is average
+# 1.55 is short
+# 1.85 is tall
 ```
 
 ### 5. Joining
@@ -236,8 +247,8 @@ numbers = Flow.join(flow, squares, cubes).collect()
 flow.send([1, 2, 3])
 print(numbers)  # Output: [1, 1, 1, 4, 8, 2, 9, 27, 3]
 ```
-This is tricky. Why numbers not in order? Numbers itself, then squares,
-then cubes. `squares` & `cubes` are attached to the `flow` and values from 
+This is tricky. Why numbers not in order: numbers itself, then squares,
+then cubes? `squares` & `cubes` are attached to the `flow` and values from 
 `flow.send` will be passed to these sub-flows first. So, they'll arrive into
 joined flow `numbers` earlier.
 
