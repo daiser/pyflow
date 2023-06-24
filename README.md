@@ -5,6 +5,9 @@ boilerplate code.
 
 I used Python 3.11. 3.10 must be fine.
 
+There is implementations for same idea for other languages:
+- Go: [GoFlow](https://github.com/daiser/goflow)
+
 ## What is Flow?
 
 Let's say we need simple app witch parses some strings from STDIN. If string is
