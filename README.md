@@ -1,6 +1,6 @@
 # PyFlow
 
-Convenient library to manage data flow inside your app by reducing amount of
+Convenient library to manage data flow in your app by reducing amount of
 boilerplate code.
 
 I used Python 3.11. 3.10 must be fine.
