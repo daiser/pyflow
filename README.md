@@ -1,4 +1,4 @@
-# Py-Flow
+# PyFlow
 
 Convenient library to manage data flow inside your app by reducing amount of
 boilerplate code.
