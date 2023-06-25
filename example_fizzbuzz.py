@@ -13,7 +13,7 @@ def fizzbuzzer(n: int) -> str:
 
 flow = Flow[int]()
 
-fizzbuzz, fizz, buzz, num, _ = flow.segregate(fizzbuzzer, 'fb', 'f', 'b', 'n')
+fizzbuzz, fizz, buzz, num = flow.segregate(fizzbuzzer, 'fb', 'f', 'b', 'n')
 
 fizzbuzz.peep(lambda n: print("FizzBuzz"))
 fizz.peep(lambda n: print("Fizz"))
