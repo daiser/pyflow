@@ -24,3 +24,10 @@ class TestFlow:
         flow(1)
         flow.send([2, 3])
         assert my_list == [1, 2, 3]
+
+    def test_peep(self):
+        peeped = []
+        flow = Flow[str]()
+        flow.peep(lambda s: peeped.append(s))
+        flow.send(["a", "b", "c"])
+        assert peeped == ["a", "b", "c"]
