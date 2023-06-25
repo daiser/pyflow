@@ -12,7 +12,7 @@ TObserver = typing.Callable[[TValue], None]
 """This is how you peeping values."""
 TMapper = typing.Callable[[TValue], TMappedValue]
 """This is how you map values."""
-TClassificator = typing.Callable[[TValue], TClass]
+TClassificator = typing.Callable[[TValue], TClass | typing.Iterable[TClass]]
 """This is how you classifying values."""
 
 
@@ -35,7 +35,7 @@ class Flow(typing.Generic[TValue]):
 
     def peep(self, observer: TObserver) -> 'Flow[TValue]':
         """You can see any value passing through. And do anything with it."""
-        return self.next(lambda v: _snitch_and_pass(v, observer))
+        return self.next(lambda v: _observe(v, observer))
 
     def collect(self) -> list[TValue]:
         self.next(lambda v: self._collection.append(v))
@@ -50,11 +50,14 @@ class Flow(typing.Generic[TValue]):
 
     def segregate(self,
                   classificator: TClassificator,
-                  *classes: TClass) -> tuple['Flow[TValue]', ...]:
+                  *classes: TClass,
+                  unclassified: bool = False) -> tuple['Flow[TValue]', ...]:
         """Source flow splits into several flows by the number of classes
          passed. For each value `classificator` tells its class and values goes
          to the corresponding flow. Useful indeed."""
-        classificator = _Classificator(classificator, list(classes))
+        classificator = _Classificator(classificator,
+                                       list(classes),
+                                       unclassified)
         self.next(classificator)
         return classificator.flows
 
@@ -80,13 +83,16 @@ class Flow(typing.Generic[TValue]):
 
 
 class _Classificator(typing.Generic[TValue, TClass]):
-    def __init__(self, classify: TClassificator, classes: list[TClass]):
+    def __init__(self,
+                 classificator: TClassificator,
+                 classes: list[TClass],
+                 unclassified_flow: bool):
         if not classes:
             raise ValueError("empty classes")
         if len(classes) != len(set(classes)):
             raise ValueError("non unique classes")
 
-        self._classify = classify
+        self._classify = classificator
         self._flows_in_order: list[Flow[TValue]] = list()
         self._directions: dict[TClass, Flow[TValue]] = dict()
 
@@ -95,19 +101,34 @@ class _Classificator(typing.Generic[TValue, TClass]):
             self._flows_in_order.append(class_flow)
             self._directions[class_] = class_flow
 
-        self._unclassified = Flow[TValue]()
-        self._flows_in_order.append(self._unclassified)
+        self._unclassified: Flow[TValue] | None = None
+        if unclassified_flow:
+            self._unclassified = Flow[TValue]()
+            self._flows_in_order.append(self._unclassified)
 
     @property
     def flows(self) -> tuple[Flow[TValue], ...]:
         return tuple(self._flows_in_order)
 
+    def _get_directions(self, classes: TClass | typing.Iterable[TClass]) \
+            -> typing.Generator[Flow[TValue] | None, None, None]:
+        try:
+            for class_ in classes:
+                if class_ in self._directions:
+                    yield self._directions[class_]
+        except TypeError:
+            yield from self._get_directions([classes])
+
     def __call__(self, v: TValue) -> TValue | None:
-        class_ = self._classify(v)
-        self._directions.get(class_, self._unclassified)(v)
+        directions = list(self._get_directions(self._classify(v)))
+        if directions:
+            for flow in directions:
+                flow(v)
+        elif self._unclassified is not None:
+            self._unclassified(v)
         return None  # stop source flow
 
 
-def _snitch_and_pass(v: TValue, snitch: TObserver) -> TValue:
-    snitch(v)
+def _observe(v: TValue, observer: TObserver) -> TValue:
+    observer(v)
     return v

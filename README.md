@@ -1,5 +1,7 @@
 # PyFlow
 
+![example workflow](https://github.com/daiser/pyflow/actions/workflows/flow.yml/badge.svg)
+
 Convenient library to manage data flow in your app by reducing amount of
 boilerplate code.
 
@@ -78,7 +80,7 @@ Safe Database along the way: `peep(lambda i: print(f"insert into table(n) values
 
 Out Flow set up and ready to accept values. Let's `flow.send(sys.stdin)` some into it.
 
-This is it. We and our beloved `integers` lived happily ever after. The end.
+This is it. We and our beloved `integers` lived happily ever after.
 
 ## What else can it do?
 
