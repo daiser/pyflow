@@ -95,14 +95,17 @@ class _Classificator(typing.Generic[TValue, TClass]):
             self._flows_in_order.append(class_flow)
             self._directions[class_] = class_flow
 
+        self._unclassified = Flow[TValue]()
+        self._flows_in_order.append(self._unclassified)
+
     @property
     def flows(self) -> tuple[Flow[TValue], ...]:
         return tuple(self._flows_in_order)
 
     def __call__(self, v: TValue) -> TValue | None:
         class_ = self._classify(v)
-        self._directions[class_](v)
-        return None
+        self._directions.get(class_, self._unclassified)(v)
+        return None  # stop source flow
 
 
 def _snitch_and_pass(v: TValue, snitch: TObserver) -> TValue:
