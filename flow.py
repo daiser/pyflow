@@ -14,6 +14,8 @@ TMapper = typing.Callable[[TValue], TMappedValue]
 """This is how you map values."""
 TClassificator = typing.Callable[[TValue], TClass | typing.Iterable[TClass]]
 """This is how you classifying values."""
+TSelector = typing.Callable[[TValue], typing.Iterable[TMappedValue]]
+"""This is how you select values."""
 
 
 class Flow(typing.Generic[TValue]):
@@ -60,6 +62,13 @@ class Flow(typing.Generic[TValue]):
                                        unclassified)
         self.next(classificator)
         return classificator.flows
+
+    def select(self, selector: TSelector) -> 'Flow[TMappedValue]':
+        """For each input value runs selector and sends its output
+         to new a Flow."""
+        selection_flow = Flow[TMappedValue]()
+        self.next(lambda value: selection_flow.send(selector(value)))
+        return selection_flow
 
     def __call__(self, v: TValue):
         result = self._processor(v)
