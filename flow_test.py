@@ -37,6 +37,17 @@ class TestFlow:
         f.send(["a", "b", "c"])
         assert peeped == ["a", "b", "c"]
 
+    def test_select(self):
+        filesystem = {
+            "folder1": ["file1", "file2"],
+            "folder2": ["file3", "file4"],
+        }
+
+        f = Flow[str]()
+        files = f.select(lambda folder: filesystem[folder]).collect()
+        f.send(filesystem.keys())
+        assert files == ["file1", "file2", "file3", "file4", ]
+
 
 class TestClassificator:
     def test_invalid_ctor(self):
