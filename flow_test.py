@@ -48,6 +48,19 @@ class TestFlow:
         f.send(filesystem.keys())
         assert files == ["file1", "file2", "file3", "file4", ]
 
+    def test_count(self):
+        counter = 0
+
+        def setter(value: int):
+            nonlocal counter
+            counter = value
+
+        f = Flow[int]()
+        f.count(setter)
+        f.send([1, 2, 3])
+
+        assert counter == 3
+
 
 class TestClassificator:
     def test_invalid_ctor(self):

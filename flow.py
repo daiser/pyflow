@@ -70,6 +70,19 @@ class Flow(typing.Generic[TValue]):
         self.next(lambda value: selection_flow.send(selector(value)))
         return selection_flow
 
+    def count(self, setter: typing.Callable[[int], None]) -> 'Flow[TValue]':
+        """Counts values passes and updates external variable
+        via provided `setter` callback."""
+        counter = 0
+
+        def count(value: TValue) -> TValue:
+            nonlocal counter
+            counter += 1
+            setter(counter)
+            return value
+
+        return self.next(count)
+
     def __call__(self, v: TValue):
         result = self._processor(v)
         if result is not None:
