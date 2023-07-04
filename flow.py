@@ -134,12 +134,15 @@ class _Classificator(typing.Generic[TValue, TClass]):
 
     def _get_directions(self, classes: TClass | typing.Iterable[TClass]) \
             -> typing.Generator[Flow[TValue] | None, None, None]:
-        try:
-            for class_ in classes:
-                if class_ in self._directions:
-                    yield self._directions[class_]
-        except TypeError:
+        if isinstance(classes, str):
             yield from self._get_directions([classes])
+        else:
+            try:
+                for class_ in classes:
+                    if class_ in self._directions:
+                        yield self._directions[class_]
+            except TypeError:
+                yield from self._get_directions([classes])
 
     def __call__(self, v: TValue) -> TValue | None:
         directions = list(self._get_directions(self._classify(v)))

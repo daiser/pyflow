@@ -72,7 +72,7 @@ class TestClassificator:
                           False)  # duplicate classes
 
     def test_unclassified_flow(self):
-        c = Classificator(_value_is_class, ["a", "b"], True)
+        c = Classificator(_value_is_class, ["aa", "bb"], True)
         flows = c.flows
         assert len(flows) == 3, "invalid number of flows created"
 
@@ -81,11 +81,11 @@ class TestClassificator:
         b_list = flow_b.collect()
         uc_list = flow_uc.collect()
 
-        for v in ["a", "a", "b", "c"]:
+        for v in ["aa", "aa", "bb", "c"]:
             c(v)
 
-        assert a_list == ["a", "a"]
-        assert b_list == ["b"]
+        assert a_list == ["aa", "aa"]
+        assert b_list == ["bb"]
         assert uc_list == ["c"]
 
     def test_no_unclassified_flow(self):
